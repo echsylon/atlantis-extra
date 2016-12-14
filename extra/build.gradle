@@ -5,6 +5,7 @@ plugins {
 }
 
 apply plugin: 'com.android.library'
+apply from: "${rootProject.rootDir}/script/version.gradle"
 
 retrolambda {
     bytecodeVersion 51
@@ -18,8 +19,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 1
-        versionName '0.0.1'
+        versionCode prepareVersionCode()
+        versionName prepareVersionName()
         project.archivesBaseName = 'atlantis-extra'
         project.version = versionName
     }

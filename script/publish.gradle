@@ -22,7 +22,8 @@ publishing {
                 }
             }
             
-            artifact("${buildDir}/outputs/aar/*.aar")
+            def fileName = "${archivesBaseName}-${version}.aar".replace(' ', '-').toLowerCase()
+            artifact("${buildDir}/outputs/aar/${fileName}")
         }
     }
 }
