@@ -1,0 +1,22 @@
+bintray {
+    user = System.getenv('ATLANTIS_BINTRAY_USER')
+    key = System.getenv('ATLANTIS_BINTRAY_KEY')
+    publications = ['atlantis_extra']
+    publish = true
+
+    pkg {
+        repo = 'maven'
+        name = 'atlantis-extra'
+        licenses = ['Apache-2.0']
+        websiteUrl = 'https://github.com/echsylon/atlantis-extra/wiki'
+        issueTrackerUrl = 'https://github.com/echsylon/atlantis-extra/issues'
+        vcsUrl = 'https://github.com/echsylon/atlantis-extra.git'
+        githubRepo = 'echsylon/atlantis-extra'
+
+        version {
+            name = android.defaultConfig.versionName
+            vcsTag = "v${android.defaultConfig.versionName}"
+            released = new Date()
+        }
+    }
+}
