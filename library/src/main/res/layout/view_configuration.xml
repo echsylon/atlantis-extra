@@ -8,7 +8,7 @@
 
     <Spinner
         android:id="@+id/type"
-        style="@style/Widget.AppCompat.Button.Small"
+        style="@android:style/Widget.Button.Small"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"/>

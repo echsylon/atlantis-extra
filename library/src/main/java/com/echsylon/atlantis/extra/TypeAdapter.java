@@ -1,7 +1,6 @@
 package com.echsylon.atlantis.extra;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,9 +34,8 @@ class TypeAdapter extends ArrayAdapter<TypeAdapter.Type> {
         super(context, View.NO_ID, Type.values());
     }
 
-    @NonNull
     @Override
-    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+    public View getView(int position, View convertView, ViewGroup parent) {
         Type type = getItem(position);
         TextView textView = getView(convertView, android.R.layout.simple_spinner_item, parent);
         textView.setText(type != null ? type.value : null);
@@ -45,7 +43,7 @@ class TypeAdapter extends ArrayAdapter<TypeAdapter.Type> {
     }
 
     @Override
-    public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
+    public View getDropDownView(int position, View convertView, ViewGroup parent) {
         Type type = getItem(position);
         TextView textView = getView(convertView, android.R.layout.simple_spinner_dropdown_item, parent);
         textView.setText(type != null ? type.labelResId : -1);

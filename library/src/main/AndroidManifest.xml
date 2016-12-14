@@ -6,7 +6,7 @@
         <activity
             android:name=".AtlantisSettingsActivity"
             android:label="@string/atlantis"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+            android:theme="@android:style/Theme.DeviceDefault.Light.DarkActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
