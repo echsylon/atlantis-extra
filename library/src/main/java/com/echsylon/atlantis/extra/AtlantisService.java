@@ -1,4 +1,4 @@
-package com.echsylon.atlantis.extras;
+package com.echsylon.atlantis.extra;
 
 import android.app.Service;
 import android.content.Intent;

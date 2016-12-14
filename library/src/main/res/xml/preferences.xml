@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Configuration setting -->
-    <com.echsylon.atlantis.extras.AtlantisConfigurationPreference
+    <com.echsylon.atlantis.extra.AtlantisConfigurationPreference
         android:dialogLayout="@layout/view_configuration"
         android:key="key_atlantis_configuration"
         android:summary="%s"

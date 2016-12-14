@@ -1,4 +1,4 @@
-package com.echsylon.atlantis.extras;
+package com.echsylon.atlantis.extra;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
