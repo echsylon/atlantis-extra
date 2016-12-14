@@ -42,5 +42,10 @@ dependencies {
 
 // Custom archive build configurations
 apply from: "${rootProject.rootDir}/script/aar.gradle"
+apply from: "${rootProject.rootDir}/script/jar.gradle"
 apply from: "${rootProject.rootDir}/script/publish.gradle"
 apply from: "${rootProject.rootDir}/script/bintray.gradle"
+
+clean {
+    delete "${rootProject.rootDir}/docs"
+}
