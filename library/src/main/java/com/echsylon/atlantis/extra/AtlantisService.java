@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
  * The {@code startService(Intent)} approach is, due to its nature, a silent
  * send-only API. There is no way to read the states of {@code Atlantis} this
  * way. The client can, nevertheless, start {@code Atlantis} like so:
- * <pre>{@code
+ * <pre><code>
  *
  *     ComponentName component = new ComponentName(
  *             "com.echsylon.atlantis.extras",
@@ -38,10 +38,10 @@ import java.util.concurrent.Callable;
  *     if (startService(intent) == null)
  *         Log.d("TAG", "Atlantis isn't available in this build config");
  *
- * }</pre>
+ * </code></pre>
  * A similar example on how to enable/disable recording of missing request
  * templates could look something like:
- * <pre>{@code
+ * <pre><code>
  *
  *     ComponentName component = new ComponentName(
  *             "com.echsylon.atlantis.extras",
@@ -55,35 +55,35 @@ import java.util.concurrent.Callable;
  *     if (startService(intent) == null)
  *         Log.d("TAG", "Atlantis isn't available in this build config");
  *
- * }</pre>
+ * </code></pre>
  * To have a more interactive connection to this service the client can bind to
  * it and get a reference to the service instance through the returned binder.
  * The instance then exposes a somewhat more nuanced API.
- * <pre>{@code
+ * <pre><code>
  *
  *     private AtlantisService service;
  *
  *     private ServiceConnection connection = new ServiceConnection() {
- *        @literal @Override
+ *        {@literal @Override}
  *         public void onServiceConnected(ComponentName c, IBinder binder) {
  *             AtlantisService.Binder bndr = (AtlantisService.Binder) binder;
  *             service = bndr.getService();
  *         }
  *
- *        @literal @Override
+ *        {@literal @Override}
  *         public void onServiceDisconnected(ComponentName component) {
  *             service = null;
  *         }
  *     };
  *
- *    @literal @Override
+ *    {@literal @Override}
  *     protected void onStart() {
  *         super.onStart();
  *         Intent intent = new Intent(this, AtlantisService.class);
  *         bindService(intent, connection, Context.BIND_AUTO_CREATE);
  *     }
  *
- *    @literal @Override
+ *    {@literal @Override}
  *     protected void onStop() {
  *         super.onStop();
  *         unbindService(connection);
@@ -95,7 +95,7 @@ import java.util.concurrent.Callable;
  *         }
  *     }
  *
- * }</pre>
+ * </code></pre>
  * This approach requires a bit more code, but also offers more control. It also
  * adds a hard dependency between the {@code Atlantis} service and your app.
  * <p>
@@ -103,11 +103,11 @@ import java.util.concurrent.Callable;
  * client can create a local instance of {@code Atlantis} and interact directly
  * with it. In this case it's the client app's undisputed responsibility to
  * maintain a suitable life cycle environment for {@code Atlantis}:
- * <pre>{@code
+ * <pre><code>
  *
  *     private Atlantis atlantis;
  *
- *    @literal @Override
+ *    {@literal @Override}
  *     protected void onCreate(@Nullable Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
  *         String json = getConfigurationJson(configuration);
@@ -115,7 +115,7 @@ import java.util.concurrent.Callable;
  *         atlantis.start();
  *     }
  *
- *    @literal @Override
+ *    {@literal @Override}
  *     protected void onDestroy() {
  *         atlantis.stop();
  *         atlantis = null;
@@ -128,12 +128,12 @@ import java.util.concurrent.Callable;
  *
  *     public void onStopButtonClick(View view) {
  *         atlantis.setRecordServedRequestsEnabled(true);
- *         List<MockRequest> requests = atlantis.servedRequests();
+ *         List&lt;MockRequest&gt; requests = atlantis.servedRequests();
  *
  *         // Analyze the order or whatever else.
  *     }
  *
- * }</pre>
+ * </code></pre>
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class AtlantisService extends Service {
