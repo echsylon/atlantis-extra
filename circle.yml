@@ -19,7 +19,7 @@ dependencies:
 # Run library release tests and publish test results.
 test:
   override:
-    - ./gradlew :extra:clean :extra:test --stacktrace
+    - ./gradlew clean test --stacktrace
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/release/
     - find . -type f -regex ".*/build/test-results/release/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/release \;
@@ -31,5 +31,5 @@ deployment:
     tag: /v[0-9]+\.[0-9]+\.[0-9]+/
     owner: echsylon
     commands:
-      - ./gradlew :extra:clean :extra:assembleRelease :extra:bintrayUpload
+      - ./gradlew clean assembleRelease bintrayUpload
 
