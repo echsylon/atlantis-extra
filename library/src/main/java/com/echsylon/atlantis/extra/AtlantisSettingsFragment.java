@@ -109,8 +109,21 @@ public class AtlantisSettingsFragment extends PreferenceFragment implements
         if ("key_atlantis_configuration".equals(key)) {
             configuration = sharedPreferences.getString(key, null);
             if (service != null) {
+                boolean wasAtlantisEnabled = service.isAtlantisEnabled();
+                boolean wasRecordingEnabled = service.isRecordMissingRequestsEnabled();
+
                 service.setAtlantisEnabled(false, null);
-                service.setAtlantisEnabled(true, configuration);
+                enabled.setChecked(false);
+
+                if (wasAtlantisEnabled) {
+                    service.setAtlantisEnabled(true, configuration);
+                    enabled.setChecked(true);
+                }
+
+                if (wasRecordingEnabled) {
+                    service.setRecordMissingRequestsEnabled(true);
+                    recording.setChecked(true);
+                }
             }
         }
     }
