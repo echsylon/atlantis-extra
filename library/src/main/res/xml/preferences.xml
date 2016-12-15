@@ -13,7 +13,6 @@
         android:defaultValue="false"
         android:dependency="key_atlantis_configuration"
         android:key="key_atlantis_enable"
-        android:persistent="false"
         android:summary="@string/allows_atlantis_to_serve"
         android:title="@string/enable_atlantis"/>
 
@@ -22,7 +21,6 @@
         android:defaultValue="false"
         android:dependency="key_atlantis_enable"
         android:key="key_atlantis_record"
-        android:persistent="false"
         android:summary="@string/allows_recording_missing_requests"
         android:title="@string/enable_recording"/>
 

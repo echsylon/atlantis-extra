@@ -1,47 +1,34 @@
 package com.echsylon.atlantis.extra;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 
 public class AtlantisSettingsFragment extends PreferenceFragment implements
         SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private Boolean isEnabled;
-    private Boolean isRecording;
+    private boolean isEnabled;
+    private boolean isRecording;
     private String configuration;
-    private SwitchPreference enabled;
-    private SwitchPreference recording;
-
+    private ProgressDialog progress;
     private AtlantisService service;
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName component, IBinder binder) {
             AtlantisService.Binder atlantisBinder = (AtlantisService.Binder) binder;
             service = atlantisBinder.getService();
-
-            if (isEnabled != null && configuration != null) {
-                // The UI state has changed before the service was bound. Update
-                // the now bound service state should update accordingly.
-                service.setAtlantisEnabled(isEnabled, configuration);
-            } else if (enabled != null) {
-                // The UI state has not been initialized. Update from the bound
-                // service.
-                enabled.setChecked(service.isAtlantisEnabled());
-            }
-
-            // Same update pattern as for the "enabled" state.
-            if (isRecording != null) {
-                service.setRecordMissingRequestsEnabled(isRecording);
-            } else if (recording != null) {
-                recording.setChecked(service.isRecordMissingRequestsEnabled());
-            }
+            refreshServiceState();
         }
 
         @Override
@@ -54,46 +41,23 @@ public class AtlantisSettingsFragment extends PreferenceFragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        Intent intent = new Intent(getActivity(), AtlantisService.class);
+        Context context = getActivity();
+        Intent intent = new Intent(context, AtlantisService.class);
         context.startService(intent);
-        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        enabled = (SwitchPreference) findPreference("key_atlantis_enable");
-        enabled.setOnPreferenceChangeListener((preference, value) -> {
-            isEnabled = (Boolean) value;
-            if (service != null)
-                service.setAtlantisEnabled(isEnabled, configuration);
-            return true;
-        });
-
-        recording = (SwitchPreference) findPreference("key_atlantis_record");
-        recording.setOnPreferenceChangeListener((preference, value) -> {
-            isRecording = (Boolean) value;
-            if (service != null)
-                service.setRecordMissingRequestsEnabled(isRecording);
-            return true;
-        });
-
         SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         configuration = sharedPreferences.getString("key_atlantis_configuration", null);
-    }
+        isEnabled = sharedPreferences.getBoolean("key_atlantis_enable", false);
+        isRecording = sharedPreferences.getBoolean("key_atlantis_record", false);
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
         Context context = getActivity();
-        context.unbindService(connection);
+        Intent intent = new Intent(context, AtlantisService.class);
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -102,29 +66,75 @@ public class AtlantisSettingsFragment extends PreferenceFragment implements
         getPreferenceManager()
                 .getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
+
+        Context context = getActivity();
+        context.unbindService(connection);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if ("key_atlantis_configuration".equals(key)) {
-            configuration = sharedPreferences.getString(key, null);
-            if (service != null) {
-                boolean wasAtlantisEnabled = service.isAtlantisEnabled();
-                boolean wasRecordingEnabled = service.isRecordMissingRequestsEnabled();
-
-                service.setAtlantisEnabled(false, null);
-                enabled.setChecked(false);
-
-                if (wasAtlantisEnabled) {
-                    service.setAtlantisEnabled(true, configuration);
-                    enabled.setChecked(true);
-                }
-
-                if (wasRecordingEnabled) {
-                    service.setRecordMissingRequestsEnabled(true);
-                    recording.setChecked(true);
-                }
+        if (key != null)
+            switch (key) {
+                case "key_atlantis_configuration":
+                    configuration = sharedPreferences.getString(key, null);
+                    refreshServiceState();
+                    break;
+                case "key_atlantis_enable":
+                    isEnabled = sharedPreferences.getBoolean(key, false);
+                    refreshServiceState();
+                    break;
+                case "key_atlantis_record":
+                    isRecording = sharedPreferences.getBoolean(key, false);
+                    refreshServiceState();
+                    break;
+                default:
+                    break;
             }
-        }
+    }
+
+    private void refreshServiceState() {
+        if (service != null)
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected void onPreExecute() {
+                    Context context = getActivity();
+                    if (progress != null && context != null)
+                        progress = ProgressDialog.show(context, null, null, true);
+                }
+
+                @Override
+                protected Void doInBackground(Void... params) {
+                    if (service != null) {
+                        service.setAtlantisEnabled(false, null);
+                        service.setAtlantisEnabled(isEnabled, configuration);
+                        service.setRecordMissingRequestsEnabled(isRecording);
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        if (progress != null)
+                            progress.dismiss();
+                        validateIntegrity();
+                    }, 200);
+                }
+            }.execute();
+    }
+
+    private void validateIntegrity() {
+        if (service != null)
+            if (isEnabled && !service.isAtlantisEnabled()) {
+                // Reset the setting.
+                SwitchPreference enabled = (SwitchPreference) findPreference("key_atlantis_enable");
+                enabled.setChecked(false);
+                new AlertDialog.Builder(getActivity())
+                        .setMessage(R.string.check_configuration)
+                        .setCancelable(true)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                            dialog.dismiss();
+                        }).show();
+            }
     }
 }

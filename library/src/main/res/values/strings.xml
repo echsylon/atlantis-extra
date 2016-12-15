@@ -4,6 +4,7 @@
     <string name="allows_recording_missing_requests">Saves responses fetched from Internet</string>
     <string name="asset">Asset</string>
     <string name="atlantis">Atlantis Settings</string>
+    <string name="check_configuration">Couln\'t enable Atlantis. Maybe you should check your mock configuration.</string>
     <string name="configuration">Configuration</string>
     <string name="enable_atlantis">Enable Atlantis</string>
     <string name="enable_recording">Record missing requests</string>
