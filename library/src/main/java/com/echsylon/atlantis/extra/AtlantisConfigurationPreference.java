@@ -95,13 +95,14 @@ public class AtlantisConfigurationPreference extends DialogPreference {
     protected void onDialogClosed(boolean positiveResult) {
         super.onDialogClosed(positiveResult);
         if (positiveResult) {
-            TypeAdapter.Type type = (TypeAdapter.Type) typeSelector.getSelectedItem();
             String path = pathTextBox.getText().toString();
-            String value = type.value + path;
-
-            if (callChangeListener(value)) {
-                setValue(value);
-                setSummary(String.format(summaryPattern, value));
+            if (!path.isEmpty()) {
+                TypeAdapter.Type type = (TypeAdapter.Type) typeSelector.getSelectedItem();
+                String value = type.value + path;
+                if (callChangeListener(value)) {
+                    setValue(value);
+                    setSummary(String.format(summaryPattern, value));
+                }
             }
         }
     }
