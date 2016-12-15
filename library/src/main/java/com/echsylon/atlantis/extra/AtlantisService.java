@@ -26,8 +26,8 @@ import java.util.concurrent.Callable;
  * <pre><code>
  *
  *     ComponentName component = new ComponentName(
- *             "com.echsylon.atlantis.extras",
- *             "com.echsylon.atlantis.AtlantisService");
+ *             "{INSERT_YOUR_APP_PACKAGE_HERE}",
+ *             "com.echsylon.atlantis.extra.AtlantisService");
  *
  *     Intent intent = new Intent("echsylon.atlantis.action.SET");
  *     intent.setComponent(component);
@@ -44,8 +44,8 @@ import java.util.concurrent.Callable;
  * <pre><code>
  *
  *     ComponentName component = new ComponentName(
- *             "com.echsylon.atlantis.extras",
- *             "com.echsylon.atlantis.AtlantisService");
+ *             "{INSERT_YOUR_APP_PACKAGE_HERE}",
+ *             "com.echsylon.atlantis.extra.AtlantisService");
  *
  *     Intent intent = new Intent("echsylon.atlantis.action.SET");
  *     intent.setComponent(component);
@@ -111,7 +111,8 @@ import java.util.concurrent.Callable;
  *     protected void onCreate(@Nullable Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
  *         String json = getConfigurationJson(configuration);
- *         atlantis = new Atlantis(this, json);
+ *         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
+ *         atlantis = new Atlantis(this, inputStream);
  *         atlantis.start();
  *     }
  *
@@ -218,7 +219,8 @@ public class AtlantisService extends Service {
     public void setAtlantisEnabled(final boolean enable, final String configuration) {
         if (enable && atlantis == null) {
             String json = getConfigurationJson(configuration);
-            InputStream inputStream = new ByteArrayInputStream(json.getBytes());
+            byte[] bytes = json == null || json.isEmpty() ? new byte[0] : json.getBytes();
+            InputStream inputStream = new ByteArrayInputStream(bytes);
             atlantis = new Atlantis(getApplicationContext(), inputStream);
             atlantis.start();
         } else if (!enable && atlantis != null) {
