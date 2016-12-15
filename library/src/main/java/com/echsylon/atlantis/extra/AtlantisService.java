@@ -12,6 +12,8 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.Callable;
 
 /**
@@ -219,10 +221,11 @@ public class AtlantisService extends Service {
     public void setAtlantisEnabled(final boolean enable, final String configuration) {
         if (enable && atlantis == null) {
             String json = getConfigurationJson(configuration);
-            byte[] bytes = json == null || json.isEmpty() ? new byte[0] : json.getBytes();
-            InputStream inputStream = new ByteArrayInputStream(bytes);
-            atlantis = new Atlantis(getApplicationContext(), inputStream);
-            atlantis.start();
+            if (json != null) {
+                InputStream inputStream = new ByteArrayInputStream(json.getBytes());
+                atlantis = new Atlantis(getApplicationContext(), inputStream);
+                atlantis.start();
+            }
         } else if (!enable && atlantis != null) {
             atlantis.stop();
             atlantis = null;
@@ -291,6 +294,17 @@ public class AtlantisService extends Service {
             try {
                 String file = description.substring(7);
                 return readStringFromInputStream(() -> new FileInputStream(file));
+            } catch (Exception e) {
+                Log.i(TAG, "Couldn't read configuration: " + description, e);
+                return null;
+            }
+
+        // This is an online resource.
+        if (description.matches("^(http|https)://.*$"))
+            try {
+                URL url = new URL(description);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                return readStringFromInputStream(connection::getInputStream);
             } catch (Exception e) {
                 Log.i(TAG, "Couldn't read configuration: " + description, e);
                 return null;
