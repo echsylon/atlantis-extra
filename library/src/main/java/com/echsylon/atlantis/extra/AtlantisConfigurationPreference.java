@@ -16,7 +16,7 @@ import android.widget.Spinner;
  * source for Atlantis. Valid sources are {@code "asset://..."} references,
  * {@code "file://..."} paths or {@code "http://..."} URL's.
  */
-class AtlantisConfigurationPreference extends DialogPreference {
+public class AtlantisConfigurationPreference extends DialogPreference {
 
     /**
      * A custom parcelable class persisting the current instance state of this
@@ -59,7 +59,7 @@ class AtlantisConfigurationPreference extends DialogPreference {
     private String summaryPattern;
     private String value;
 
-    AtlantisConfigurationPreference(Context context, AttributeSet attrs) {
+    public AtlantisConfigurationPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
