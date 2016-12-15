@@ -10,11 +10,11 @@ machine:
     version: oraclejdk8
 
 # Custom Android dependency config
-#dependencies:
-#  pre:
-#    - echo y | android update sdk --no-ui --all --filter tools,platform-tools,android-25
-#    - echo y | android update sdk --no-ui --all --filter build-tools-25.0.2
-#    - echo y | android update sdk --no-ui --all --filter extra-android-m2repository
+dependencies:
+  pre:
+    - echo y | android update sdk --no-ui --all --filter tools,platform-tools,android-25
+    - echo y | android update sdk --no-ui --all --filter build-tools-25.0.2
+    - echo y | android update sdk --no-ui --all --filter extra-android-m2repository
 
 # Run library release tests and publish test results.
 #test:
