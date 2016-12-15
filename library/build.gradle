@@ -34,6 +34,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_7
     }
+    lintOptions {
+          abortOnError false
+    }
 }
 
 dependencies {
@@ -41,8 +44,7 @@ dependencies {
 }
 
 // Custom archive build configurations
-apply from: "${rootProject.rootDir}/script/aar.gradle"
-apply from: "${rootProject.rootDir}/script/jar.gradle"
+apply from: "${rootProject.rootDir}/script/archive.gradle"
 apply from: "${rootProject.rootDir}/script/publish.gradle"
 apply from: "${rootProject.rootDir}/script/bintray.gradle"
 

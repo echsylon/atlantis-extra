@@ -21,16 +21,17 @@ publishing {
                     dependencyNode.appendNode('version', it.version)
                 }
             }
-            
-            // Source code bundle, from task defined in 'jar.gradle'
-            artifact(sourceJar)
 
-            // JavaDoc bundle, from task defined in 'jar.gradle'
-            artifact(javadocJar)
+            def fileName = "${archivesBaseName}-release-${version}".toLowerCase()
 
-            // The actual library, from task defined in 'jar.gradle'
-            def fileName = "${archivesBaseName}-${version}.aar".replace(' ', '-').toLowerCase()
-            artifact("${buildDir}/outputs/aar/${fileName}")
+            // Source code bundle from task defined in 'archive.gradle'
+            artifact("${buildDir}/outputs/jar/${fileName}-source.jar")
+
+            // JavaDoc bundle from task defined in 'archive.gradle'
+            artifact("${buildDir}/outputs/jar/${fileName}-javadoc.jar")
+
+            // The actual library from task defined in 'archive.gradle'
+            artifact("${buildDir}/outputs/aar/${fileName}.aar")
         }
     }
 }
