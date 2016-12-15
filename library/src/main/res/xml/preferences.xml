@@ -11,6 +11,7 @@
     <!-- Enable/disable Atlantis setting -->
     <SwitchPreference
         android:defaultValue="false"
+        android:dependency="key_atlantis_configuration"
         android:key="key_atlantis_enable"
         android:persistent="false"
         android:summary="@string/allows_atlantis_to_serve"
