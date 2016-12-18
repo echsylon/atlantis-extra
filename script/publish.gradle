@@ -25,13 +25,21 @@ publishing {
             def fileName = "${archivesBaseName}-${version}".toLowerCase()
 
             // Source code bundle from task defined in 'archive.gradle'
-            artifact("${buildDir}/outputs/jar/release/${fileName}-source.jar")
+            artifact("${buildDir}/outputs/jar/release/${fileName}-source.jar") {
+                classifier 'source'
+                extension 'jar'
+            }
 
             // JavaDoc bundle from task defined in 'archive.gradle'
-            artifact("${buildDir}/outputs/jar/release/${fileName}-javadoc.jar")
+            artifact("${buildDir}/outputs/jar/release/${fileName}-javadoc.jar") {
+                classifier 'javadoc'
+                extension 'jar'
+            }
 
             // The actual library from task defined in 'archive.gradle'
-            artifact("${buildDir}/outputs/aar/release/${fileName}.aar")
+            artifact("${buildDir}/outputs/aar/release/${fileName}.aar") {
+                extension 'aar'
+            }
         }
     }
 }
