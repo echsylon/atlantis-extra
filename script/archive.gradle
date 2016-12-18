@@ -1,17 +1,17 @@
 android.libraryVariants.all { variant ->
     def name = variant.name.capitalize()
-    def suffix = name.replaceAll('([A-Z])', '$1').toLowerCase()
-    def template = "${archivesBaseName}-${suffix}-${version}"
+    def template = "${archivesBaseName}-${version}"
+    def subfolder = name.replaceAll('([a-z])([A-Z])', '$1/$2').toLowerCase()
+
 
     // Force AAR archives to have the same naming conventions as the JAR's.
     variant.outputs.each { output ->
-        def fileName = output.outputFile.name
-        printf(fileName)
-        if (fileName.endsWith('.aar')) {
-            output.outputFile = new File(output.outputFile.parent, template + '.aar')
+        if (output.outputFile.name.endsWith('.aar')) {
+            output.outputFile = file("${output.outputFile.parent}/${subfolder}/${template}.aar")
         }
     }
-
+    
+    // Compile javadoc output (HTML file tree)
     task("javadoc${name}", type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
@@ -22,40 +22,40 @@ android.libraryVariants.all { variant ->
         }
         destinationDir = file("${rootProject.rootDir}/docs")
     }
-    
-    artifacts.add('archives', task("javadocJar${name}", type: Jar) {
-        appendix "${suffix}"
+
+    // Build the javadoc Jar
+    task("jarJavadoc${name}", type: Jar, dependsOn: "javadoc${name}") {
         classifier 'javadoc'
         from tasks["javadoc${name}"].destinationDir
-        destinationDir = file("${buildDir}/outputs/jar")
-    })
+        destinationDir = file("${buildDir}/outputs/jar/${subfolder}")
+    }
 
-    artifacts.add('archives', task("sourceJar${name}", type: Jar) {
-        appendix "${suffix}"
+    // Build the source Jar
+    task("jarSource${name}", type: Jar) {
         classifier 'source'
         from android.sourceSets.main.java.srcDirs
-        destinationDir = file("${buildDir}/outputs/jar")
-    })
+        destinationDir = file("${buildDir}/outputs/jar/${subfolder}")
+    }
 
-    artifacts.add('archives', task("slimJar${name}", type: Jar) {
-        appendix "${suffix}"
+    // Build the plain Jar
+    task("jarSlim${name}", type: Jar) {
         from("${buildDir}/intermediates/transforms/retrolambda/release/folders/1/1/retrolambda") {
             exclude '**/BuildConfig.class'
             exclude '**/R$*.class'
             exclude '**/R.class'
         }
-        destinationDir = file("${buildDir}/outputs/jar")
-    })
+        destinationDir = file("${buildDir}/outputs/jar/${subfolder}")
+    }
 
-    artifacts.add('archives', task("fatJar${name}", type: Jar) {
-        appendix "${suffix}"
+    // Build the fat Jar (including all dependencies)
+    task("jarFat${name}", type: Jar) {
         classifier 'fat'
         // Add external dependency classes
         from configurations.compile.findAll {
-            !it.getName().equals("android.jar") &&
-            !it.getName().startsWith("junit") &&
-            !it.getName().startsWith("atlantis") &&
-            !it.getName().startsWith("hamcrest")
+            !it.getName().equals('android.jar') &&
+            !it.getName().startsWith('junit') &&
+            !it.getName().startsWith('atlantis') &&
+            !it.getName().startsWith('hamcrest')
         }.collect {
             it.isDirectory() ? it : zipTree(it)
         }
@@ -65,7 +65,13 @@ android.libraryVariants.all { variant ->
             exclude '**/R$*.class'
             exclude '**/R.class'
         }
-        destinationDir = file("${buildDir}/outputs/jar")
-    })
+        destinationDir = file("${buildDir}/outputs/jar/${subfolder}")
+    }
+    
+    // Make sure 'assembleXyz' runs the corresponding jar tasks
+    tasks["assemble${name}"].dependsOn tasks["jarJavadoc${name}"]
+    tasks["assemble${name}"].dependsOn tasks["jarSource${name}"]
+    tasks["assemble${name}"].dependsOn tasks["jarSlim${name}"]
+    tasks["assemble${name}"].dependsOn tasks["jarFat${name}"]
 }
 

@@ -2,7 +2,7 @@ apply plugin: 'maven-publish'
 
 publishing {
     publications {
-        atlantis_extra(MavenPublication) {
+        atlantisExtra(MavenPublication) {
             groupId = 'com.echsylon.atlantis'
             artifactId = 'atlantis-extra'
             version = android.defaultConfig.versionName
@@ -22,16 +22,16 @@ publishing {
                 }
             }
 
-            def fileName = "${archivesBaseName}-release-${version}".toLowerCase()
+            def fileName = "${archivesBaseName}-${version}".toLowerCase()
 
             // Source code bundle from task defined in 'archive.gradle'
-            artifact("${buildDir}/outputs/jar/${fileName}-source.jar")
+            artifact("${buildDir}/outputs/jar/release/${fileName}-source.jar")
 
             // JavaDoc bundle from task defined in 'archive.gradle'
-            artifact("${buildDir}/outputs/jar/${fileName}-javadoc.jar")
+            artifact("${buildDir}/outputs/jar/release/${fileName}-javadoc.jar")
 
             // The actual library from task defined in 'archive.gradle'
-            artifact("${buildDir}/outputs/aar/${fileName}.aar")
+            artifact("${buildDir}/outputs/aar/release/${fileName}.aar")
         }
     }
 }

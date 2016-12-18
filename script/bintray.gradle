@@ -1,7 +1,7 @@
 bintray {
     user = System.getenv('BINTRAY_USER')
     key = System.getenv('BINTRAY_KEY')
-    publications = ['atlantis_extra']
+    publications = ['atlantisExtra']
     publish = true
 
     pkg {
