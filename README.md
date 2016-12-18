@@ -5,3 +5,5 @@ The `Atlantis Extra` library will aid you in integrating `Atlantis` to your Andr
 A configuration launcher `Activity` is also exposed, which enables the user to control the enabled state and some other features of `Atlantis`. You can, of course, choose to link to this `Activity` from within your app (e.g. from a menu option or a toolbar action) if you would want to. 
 
 You can get a "quick-n-dirty" introduction on how to do stuff [here](https://github.com/echsylon/atlantis-extra/wiki).
+
+You can also have a look at the [`Atlantis Demo`](https://github.com/echsylon/atlantis-demo) project which directly uses this helper layer.
