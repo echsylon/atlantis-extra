@@ -1,5 +1,7 @@
 package com.echsylon.atlantis.extra;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -151,6 +153,8 @@ public class AtlantisService extends Service {
     private static final String FEATURE_ATLANTIS = "ATLANTIS";
     private static final String FEATURE_RECORD_MISSING_REQUESTS = "RECORD";
 
+    private static final int NOTIFICATION_ID = 1;
+
     /**
      * This class enables means of binding to the {@link AtlantisService} and
      * calling the public API methods directly from another Android component.
@@ -262,11 +266,13 @@ public class AtlantisService extends Service {
                 atlantis.start();
                 updateConfigurationPreference(configuration);
                 updateEnabledPreference(true);
+                setServiceForegroundEnabled(true);
             } finally {
                 closeSilently(inputStream);
             }
         } else {
             updateEnabledPreference(false);
+            setServiceForegroundEnabled(false);
             stopSelf();
         }
     }
@@ -337,6 +343,28 @@ public class AtlantisService extends Service {
         sharedPreferences.edit()
                 .putBoolean(recordingPreferenceKey, newRecordingState)
                 .apply();
+    }
+
+    /**
+     * Sets the Atlantis service as a foreground or background service.
+     *
+     * @param isForegroundEnabled The foreground enabled state.
+     */
+    private void setServiceForegroundEnabled(boolean isForegroundEnabled) {
+        if (isForegroundEnabled) {
+            Intent notificationIntent = new Intent(getApplicationContext(), AtlantisSettingsActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            Notification notification = new Notification.Builder(this)
+                    .setContentTitle(getText(R.string.atlantis))
+                    .setContentText(getText(R.string.serving_mock))
+                    .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                    .setContentIntent(pendingIntent)
+                    .build();
+
+            startForeground(NOTIFICATION_ID, notification);
+        } else {
+            stopForeground(true);
+        }
     }
 
     /**
