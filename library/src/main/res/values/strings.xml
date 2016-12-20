@@ -7,5 +7,5 @@
     <string name="configuration">Configuration</string>
     <string name="enable_atlantis">Enable Atlantis</string>
     <string name="enable_recording">Record missing requests</string>
-    <string name="serving_mock">Serving mock responses.</string>
+    <string name="settings">Settings</string>
 </resources>

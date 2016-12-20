@@ -188,6 +188,7 @@ public class AtlantisService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        setServiceForegroundEnabled(true);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         configurationPreferenceKey = getString(R.string.key_atlantis_configuration);
@@ -208,6 +209,8 @@ public class AtlantisService extends Service {
             atlantis.stop();
             atlantis = null;
         }
+
+        setServiceForegroundEnabled(false);
         super.onDestroy();
     }
 
@@ -266,13 +269,11 @@ public class AtlantisService extends Service {
                 atlantis.start();
                 updateConfigurationPreference(configuration);
                 updateEnabledPreference(true);
-                setServiceForegroundEnabled(true);
             } finally {
                 closeSilently(inputStream);
             }
         } else {
             updateEnabledPreference(false);
-            setServiceForegroundEnabled(false);
         }
     }
 
@@ -355,7 +356,7 @@ public class AtlantisService extends Service {
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
             Notification notification = new Notification.Builder(this)
                     .setContentTitle(getText(R.string.atlantis))
-                    .setContentText(getText(R.string.serving_mock))
+                    .setContentText(getText(R.string.settings))
                     .setSmallIcon(android.R.drawable.sym_def_app_icon)
                     .setContentIntent(pendingIntent)
                     .build();
