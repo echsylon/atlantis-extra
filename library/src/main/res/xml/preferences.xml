@@ -2,23 +2,23 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Configuration setting -->
-        android:key="key_atlantis_configuration"
     <EditTextPreference
+        android:key="@string/key_atlantis_configuration"
         android:title="@string/configuration"/>
 
     <!-- Enable/disable Atlantis setting -->
     <SwitchPreference
         android:defaultValue="false"
-        android:dependency="key_atlantis_configuration"
-        android:key="key_atlantis_enable"
+        android:dependency="@string/key_atlantis_configuration"
+        android:key="@string/key_atlantis_enable"
         android:summary="@string/allows_atlantis_to_serve"
         android:title="@string/enable_atlantis"/>
 
     <!-- Enable/disable recording setting -->
     <SwitchPreference
         android:defaultValue="false"
-        android:dependency="key_atlantis_enable"
-        android:key="key_atlantis_record"
+        android:dependency="@string/key_atlantis_enable"
+        android:key="@string/key_atlantis_record"
         android:summary="@string/allows_recording_missing_requests"
         android:title="@string/enable_recording"/>
 
