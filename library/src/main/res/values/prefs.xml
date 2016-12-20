@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_atlantis_configuration" translatable="false">key_atlantis_configuration</string>
+    <string name="key_atlantis_enable" translatable="false">key_atlantis_enable</string>
+    <string name="key_atlantis_record" translatable="false">key_atlantis_record</string>
+</resources>

@@ -2,7 +2,10 @@ package com.echsylon.atlantis.extra;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.echsylon.atlantis.Atlantis;
@@ -167,12 +170,33 @@ public class AtlantisService extends Service {
     }
 
 
+    private SharedPreferences sharedPreferences;
+    private String configurationPreferenceKey;
+    private String recordingPreferenceKey;
+    private String enabledPreferenceKey;
     private Atlantis atlantis;
 
 
     @Override
     public IBinder onBind(Intent intent) {
         return new AtlantisService.Binder();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        configurationPreferenceKey = getString(R.string.key_atlantis_configuration);
+        recordingPreferenceKey = getString(R.string.key_atlantis_record);
+        enabledPreferenceKey = getString(R.string.key_atlantis_record);
+
+        String configuration = sharedPreferences.getString(configurationPreferenceKey, null);
+        if (configuration != null && sharedPreferences.getBoolean(enabledPreferenceKey, false))
+            setAtlantisEnabled(true, configuration);
+
+        if (sharedPreferences.getBoolean(recordingPreferenceKey, false))
+            setRecordMissingRequestsEnabled(true);
     }
 
     @Override
@@ -191,13 +215,18 @@ public class AtlantisService extends Service {
             if (feature != null)
                 switch (feature) {
                     case FEATURE_ATLANTIS: {
-                        boolean enable = intent.getBooleanExtra(EXTRA_STATE, false);
-                        String configuration = intent.getStringExtra(EXTRA_DATA);
+                        Bundle extras = intent.getExtras();
+                        boolean enable = extras.getBoolean(EXTRA_STATE,
+                                sharedPreferences.getBoolean(enabledPreferenceKey, false));
+                        String configuration = extras.getString(EXTRA_DATA,
+                                sharedPreferences.getString(configurationPreferenceKey, null));
                         setAtlantisEnabled(enable, configuration);
                         break;
                     }
                     case FEATURE_RECORD_MISSING_REQUESTS: {
-                        boolean enable = intent.getBooleanExtra(EXTRA_STATE, false);
+                        Bundle extras = intent.getExtras();
+                        boolean enable = extras.getBoolean(EXTRA_STATE,
+                                sharedPreferences.getBoolean(recordingPreferenceKey, false));
                         setRecordMissingRequestsEnabled(enable);
                         break;
                     }
@@ -225,11 +254,14 @@ public class AtlantisService extends Service {
                 InputStream inputStream = new ByteArrayInputStream(json.getBytes());
                 atlantis = new Atlantis(getApplicationContext(), inputStream);
                 atlantis.start();
+                updateConfigurationPreference(configuration);
+                updateEnabledPreference(true);
             }
         } else if (!enable && atlantis != null) {
             atlantis.stop();
             atlantis = null;
             stopSelf();
+            updateEnabledPreference(false);
         }
     }
 
@@ -241,8 +273,10 @@ public class AtlantisService extends Service {
      * @param enable The desired enabled state of the feature.
      */
     public void setRecordMissingRequestsEnabled(final boolean enable) {
-        if (atlantis != null)
+        if (atlantis != null) {
             atlantis.setRecordMissingRequestsEnabled(enable);
+            updateRecordingPreference(enable);
+        }
     }
 
     /**
@@ -267,6 +301,38 @@ public class AtlantisService extends Service {
 
 
     /**
+     * Updates the {@code Atlantis} configuration preference.
+     *
+     * @param newConfiguration The new configuration description.
+     */
+    private void updateConfigurationPreference(final String newConfiguration) {
+        sharedPreferences.edit()
+                .putString(configurationPreferenceKey, newConfiguration)
+                .apply();
+    }
+
+    /**
+     * Updates the {@code Atlantis} enabled state preference.
+     *
+     * @param newEnabledState The new enabled state flag.
+     */
+    private void updateEnabledPreference(final boolean newEnabledState) {
+        sharedPreferences.edit()
+                .putBoolean(enabledPreferenceKey, newEnabledState)
+                .apply();
+    }
+
+    /**
+     * Updates the {@code Atlantis} recording state preference.
+     *
+     * @param newRecordingState The new recording state flag.
+     */
+    private void updateRecordingPreference(final boolean newRecordingState) {
+        sharedPreferences.edit()
+                .putBoolean(recordingPreferenceKey, newRecordingState)
+                .apply();
+    }
+
      * Parses a given {@code Atlantis} configuration description and returns the
      * corresponding JSON.
      *
