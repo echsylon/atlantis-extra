@@ -10,14 +10,13 @@ import android.util.Log;
 
 import com.echsylon.atlantis.Atlantis;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.Callable;
 
 /**
  * This service ensures an isolated runtime for the {@link Atlantis} mock
@@ -240,28 +239,35 @@ public class AtlantisService extends Service {
     }
 
     /**
-     * Sets the enabled state of the Atlantis mock infrastructure.
+     * Sets the enabled state of the Atlantis mock infrastructure. If already
+     * running and the given enabled flag is "true", then Atlantis will be
+     * stopped first and then re-started with the (possibly) new configuration.
      *
      * @param enable        The desired enabled state of Atlantis.
-     * @param configuration The Atlantis configuration description. This can
-     *                      either be a JSON string, a "file://..." path or an
-     *                      "asset://..." path.
+     * @param configuration The Atlantis configuration source description. If
+     *                      the enabled flag is "false" then this parameter is
+     *                      ignored and can safely be passed as null.
      */
     public void setAtlantisEnabled(final boolean enable, final String configuration) {
-        if (enable && atlantis == null) {
-            String json = getConfigurationJson(configuration);
-            if (json != null) {
-                InputStream inputStream = new ByteArrayInputStream(json.getBytes());
+        if (atlantis != null) {
+            atlantis.stop();
+            atlantis = null;
+        }
+
+        if (enable) {
+            InputStream inputStream = null;
+            try {
+                inputStream = getConfigurationInputStream(configuration);
                 atlantis = new Atlantis(getApplicationContext(), inputStream);
                 atlantis.start();
                 updateConfigurationPreference(configuration);
                 updateEnabledPreference(true);
+            } finally {
+                closeSilently(inputStream);
             }
-        } else if (!enable && atlantis != null) {
-            atlantis.stop();
-            atlantis = null;
-            stopSelf();
+        } else {
             updateEnabledPreference(false);
+            stopSelf();
         }
     }
 
@@ -334,83 +340,83 @@ public class AtlantisService extends Service {
     }
 
      * Parses a given {@code Atlantis} configuration description and returns the
-     * corresponding JSON.
+     * corresponding JSON. If the description doesn't state a specific scheme;
+     * {@code [asset|file|http|https]} then a guesswork is started where the
+     * first non-exception attempt is assumed being a qualified guess.
      *
-     * @param description The {@code Atlantis} configuration description. This
-     *                    can either be a JSON string, a {@code "file://..."}
-     *                    path or a {@code "asset://..."} path.
+     * @param description The {@code Atlantis} configuration description.
      * @return The {@code Atlantis} configuration JSON.
      */
-    private String getConfigurationJson(final String description) {
+    private InputStream getConfigurationInputStream(final String description) {
         if (description == null)
             return null;
 
-        // This is an asset reference.
+        // This is clearly an asset reference.
         if (description.startsWith("asset://"))
             try {
                 String asset = description.substring(8);
-                return readStringFromInputStream(() -> getAssets().open(asset));
+                return getAssets().open(asset);
             } catch (Exception e) {
                 Log.i(TAG, "Couldn't read configuration: " + description, e);
                 return null;
             }
 
-        // This is a file reference.
+        // This is clearly a file reference.
         if (description.startsWith("file://"))
             try {
                 String file = description.substring(7);
-                return readStringFromInputStream(() -> new FileInputStream(file));
+                return new FileInputStream(file);
             } catch (Exception e) {
                 Log.i(TAG, "Couldn't read configuration: " + description, e);
                 return null;
             }
 
-        // This is an online resource.
+        // This is clearly an online resource.
         if (description.matches("^(http|https)://.*$"))
             try {
                 URL url = new URL(description);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                return readStringFromInputStream(connection::getInputStream);
+                return connection.getInputStream();
             } catch (Exception e) {
                 Log.i(TAG, "Couldn't read configuration: " + description, e);
                 return null;
             }
 
-        // Assume already JSON.
-        return description;
+        // No known scheme has been provided. Start guessing.
+        Log.i(TAG, "No known configuration scheme provided. Start guessing [Asset|File]");
+
+        // Try treating it as an asset.
+        try {
+            return getAssets().open(description);
+        } catch (IOException e) {
+            Log.i(TAG, "Not an asset: " + description, e);
+            // No return here, we wan't to guess other options too...
+        }
+
+        // Nop, not an asset. Try opening as a file.
+        try {
+            return new FileInputStream(description);
+        } catch (FileNotFoundException e) {
+            Log.i(TAG, "Not a file: " + description, e);
+            // No return here either...
+        }
+
+        // Nop. Not a file either. Assume clear text.
+        return new ByteArrayInputStream(description.getBytes());
     }
 
     /**
-     * Reads all content from a stream and returns it as a string.
+     * Tries to gracefully close an input stream. Any exceptions during the
+     * process will be consumed, but printed to the info log.
      *
-     * @param inputStreamProvider The {@code InputStream} provider callable.
-     * @return The string content read from the input stream.
-     * @throws Exception if anything would go wrong.
+     * @param inputStream The input stream to close.
      */
-    @SuppressWarnings("ThrowFromFinallyBlock")
-    private String readStringFromInputStream(Callable<InputStream> inputStreamProvider) throws Exception {
-        InputStream inputStream = null;
-        BufferedReader bufferedReader = null;
-        InputStreamReader inputStreamReader = null;
-
-        try {
-            inputStream = inputStreamProvider.call();
-            inputStreamReader = new InputStreamReader(inputStream);
-            bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-
-            while ((line = bufferedReader.readLine()) != null)
-                stringBuilder.append(line).append("\n");
-
-            return stringBuilder.toString();
-        } finally {
-            if (inputStream != null)
+    private void closeSilently(final InputStream inputStream) {
+        if (inputStream != null)
+            try {
                 inputStream.close();
-            if (inputStreamReader != null)
-                inputStreamReader.close();
-            if (bufferedReader != null)
-                bufferedReader.close();
-        }
+            } catch (IOException e) {
+                Log.i(TAG, "Couldn't close configuration input stream", e);
+            }
     }
 }
