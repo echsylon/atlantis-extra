@@ -339,6 +339,7 @@ public class AtlantisService extends Service {
                 .apply();
     }
 
+    /**
      * Parses a given {@code Atlantis} configuration description and returns the
      * corresponding JSON. If the description doesn't state a specific scheme;
      * {@code [asset|file|http|https]} then a guesswork is started where the
