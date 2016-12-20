@@ -239,7 +239,7 @@ public class AtlantisService extends Service {
                 }
         }
 
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     /**
@@ -273,7 +273,6 @@ public class AtlantisService extends Service {
         } else {
             updateEnabledPreference(false);
             setServiceForegroundEnabled(false);
-            stopSelf();
         }
     }
 
