@@ -3,8 +3,12 @@ package com.echsylon.atlantis.extra;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -352,19 +356,51 @@ public class AtlantisService extends Service {
      */
     private void setServiceForegroundEnabled(boolean isForegroundEnabled) {
         if (isForegroundEnabled) {
-            Intent notificationIntent = new Intent(getApplicationContext(), AtlantisSettingsActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
             Notification notification = new Notification.Builder(this)
                     .setContentTitle(getText(R.string.atlantis))
                     .setContentText(getText(R.string.settings))
                     .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                    .setContentIntent(pendingIntent)
+                    .setContentIntent(getForegroundNotificationPendingIntent())
                     .build();
 
             startForeground(NOTIFICATION_ID, notification);
         } else {
             stopForeground(true);
         }
+    }
+
+    /**
+     * Tries to construct a pending intent that will launch the Atlantis
+     * settings Activity.
+     * <p>
+     * First attempt will look for {@code "notification_activity_package"} and
+     * {@code "notification_activity_class"} meta data values from the android
+     * manifest and will default to the internal {@code AtlantisSettingsActivity}
+     * if no such is found.
+     *
+     * @return A pending intent, never null.
+     */
+    private PendingIntent getForegroundNotificationPendingIntent() {
+        Intent intent;
+
+        try {
+            ComponentName componentName = new ComponentName(this, getClass());
+            PackageManager packageManager = getPackageManager();
+            ServiceInfo serviceInfo = packageManager.getServiceInfo(componentName, PackageManager.GET_META_DATA);
+            Bundle bundle = serviceInfo.metaData;
+            String pkg = bundle.getString("notification_activity_package");
+            String cls = bundle.getString("notification_activity_class");
+            if (pkg == null || cls == null || pkg.length() <= 0 || cls.length() <= 0) {
+                throw new Resources.NotFoundException();
+            } else {
+                intent = new Intent().setClassName(pkg, cls);
+            }
+        } catch (Resources.NotFoundException | PackageManager.NameNotFoundException e) {
+            Log.i(TAG, "Couldn't read custom meta data", e);
+            intent = new Intent(getApplicationContext(), AtlantisSettingsActivity.class);
+        }
+
+        return PendingIntent.getActivity(this, 0, intent, 0);
     }
 
     /**
