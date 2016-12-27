@@ -390,10 +390,15 @@ public class AtlantisService extends Service {
             Bundle bundle = serviceInfo.metaData;
             String pkg = bundle.getString("notification_activity_package");
             String cls = bundle.getString("notification_activity_class");
+
+            Log.i(TAG, "Custom activity intent: " + pkg + "/" + cls);
+
             if (pkg == null || cls == null || pkg.length() <= 0 || cls.length() <= 0) {
                 throw new Resources.NotFoundException();
             } else {
-                intent = new Intent().setClassName(pkg, cls);
+                intent = new Intent()
+                        .setClassName(pkg, cls)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
         } catch (Resources.NotFoundException | PackageManager.NameNotFoundException e) {
             Log.i(TAG, "Couldn't read custom meta data", e);
