@@ -35,12 +35,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
     lintOptions {
-          abortOnError false
+        abortOnError false
     }
 }
 
 dependencies {
-    compile 'com.echsylon.atlantis:atlantis:2.3.0'
+    provided 'com.echsylon.atlantis:atlantis:2.3.0'
 }
 
 // Custom archive build configurations
