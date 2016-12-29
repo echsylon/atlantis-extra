@@ -31,8 +31,8 @@ import java.net.URL;
  * Context#startService(Intent)}.
  * <p>
  * The {@code startService(Intent)} approach is, due to its nature, a silent
- * send-only API. There is no way to read the states of {@code Atlantis} this
- * way. The client can, nevertheless, start {@code Atlantis} like so:
+ * send-only API. The client can, nevertheless, start {@link AtlantisService}
+ * like so:
  * <pre><code>
  *
  *     ComponentName component = new ComponentName(
@@ -107,7 +107,8 @@ import java.net.URL;
  *
  * </code></pre>
  * This approach requires a bit more code, but also offers more control. It also
- * adds a hard dependency between the {@code Atlantis} service and your app.
+ * adds a hard dependency between the {@link AtlantisService} service and your
+ * app.
  * <p>
  * In order to get full access to the full feature set of {@code Atlantis} the
  * client can create a local instance of {@code Atlantis} and interact directly

@@ -15,10 +15,10 @@ android.libraryVariants.all { variant ->
     task("javadoc${name}", type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-        classpath += configurations.compile
+        classpath += configurations.provided
         options {
-            links 'http://docs.oracle.com/javase/8/docs/api/'
-            linksOffline 'http://d.android.com/reference', "${android.sdkDirectory}/docs/reference"
+            links 'https://docs.oracle.com/javase/8/docs/api', 'https://developer.android.com/reference'
+            linksOffline 'https://developer.android.com/reference', "${android.sdkDirectory}/docs/reference"
         }
         destinationDir = file("${rootProject.rootDir}/docs")
     }
