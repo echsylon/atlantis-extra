@@ -3,4 +3,5 @@
     <string name="key_atlantis_configuration" translatable="false">key_atlantis_configuration</string>
     <string name="key_atlantis_enable" translatable="false">key_atlantis_enable</string>
     <string name="key_atlantis_record" translatable="false">key_atlantis_record</string>
+    <string name="key_atlantis_record_failures" translatable="false">key_atlantis_record_failures</string>
 </resources>

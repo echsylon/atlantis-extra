@@ -156,6 +156,7 @@ public class AtlantisService extends Service {
 
     private static final String FEATURE_ATLANTIS = "ATLANTIS";
     private static final String FEATURE_RECORD_MISSING_REQUESTS = "RECORD";
+    private static final String FEATURE_RECORD_MISSING_FAILURES = "RECORD_FAILURES";
 
     private static final int NOTIFICATION_ID = 1;
 
@@ -180,6 +181,7 @@ public class AtlantisService extends Service {
     private SharedPreferences sharedPreferences;
     private String configurationPreferenceKey;
     private String recordingPreferenceKey;
+    private String recordingFailuresPreferenceKey;
     private String enabledPreferenceKey;
     private Atlantis atlantis;
 
@@ -197,7 +199,8 @@ public class AtlantisService extends Service {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         configurationPreferenceKey = getString(R.string.key_atlantis_configuration);
         recordingPreferenceKey = getString(R.string.key_atlantis_record);
-        enabledPreferenceKey = getString(R.string.key_atlantis_record);
+        recordingFailuresPreferenceKey = getString(R.string.key_atlantis_record_failures);
+        enabledPreferenceKey = getString(R.string.key_atlantis_enable);
 
         String configuration = sharedPreferences.getString(configurationPreferenceKey, null);
         if (configuration != null && sharedPreferences.getBoolean(enabledPreferenceKey, false))
@@ -205,6 +208,9 @@ public class AtlantisService extends Service {
 
         if (sharedPreferences.getBoolean(recordingPreferenceKey, false))
             setRecordMissingRequestsEnabled(true);
+
+        if (sharedPreferences.getBoolean(recordingFailuresPreferenceKey, false))
+            setRecordMissingFailuresEnabled(true);
     }
 
     @Override
@@ -238,6 +244,13 @@ public class AtlantisService extends Service {
                         boolean enable = extras.getBoolean(EXTRA_STATE,
                                 sharedPreferences.getBoolean(recordingPreferenceKey, false));
                         setRecordMissingRequestsEnabled(enable);
+                        break;
+                    }
+                    case FEATURE_RECORD_MISSING_FAILURES: {
+                        Bundle extras = intent.getExtras();
+                        boolean enable = extras.getBoolean(EXTRA_STATE,
+                                sharedPreferences.getBoolean(recordingFailuresPreferenceKey, false));
+                        setRecordMissingFailuresEnabled(enable);
                         break;
                     }
                     default:
@@ -296,6 +309,20 @@ public class AtlantisService extends Service {
     }
 
     /**
+     * Enables or disables recording of missing request templates that return
+     * with an HTTP error state from the real server. NOTE! The "record missing
+     * requests" feature must be enabled for this preference to take effect.
+     *
+     * @param enable The desired enabled state of the feature.
+     */
+    public void setRecordMissingFailuresEnabled(final boolean enable) {
+        if (atlantis != null) {
+            atlantis.setRecordMissingFailuresEnabled(enable);
+            updateRecordingPreference(enable);
+        }
+    }
+
+    /**
      * Returns the enabled state of the {@code Atlantis} infrastructure.
      *
      * @return Boolean true if {@code Atlantis} is ready to intercept requests
@@ -346,6 +373,17 @@ public class AtlantisService extends Service {
     private void updateRecordingPreference(final boolean newRecordingState) {
         sharedPreferences.edit()
                 .putBoolean(recordingPreferenceKey, newRecordingState)
+                .apply();
+    }
+
+    /**
+     * Updates the {@code Atlantis} recording failures state preference.
+     *
+     * @param newRecordingState The new recording state flag.
+     */
+    private void updateRecordingFailuresPreference(final boolean newRecordingState) {
+        sharedPreferences.edit()
+                .putBoolean(recordingFailuresPreferenceKey, newRecordingState)
                 .apply();
     }
 

@@ -21,10 +21,12 @@ public class AtlantisSettingsFragment extends PreferenceFragment {
 
     private String configurationPreferenceKey;
     private String recordingPreferenceKey;
+    private String recordingFailuresPreferenceKey;
     private String enabledPreferenceKey;
 
     private boolean isEnabled;
     private boolean isRecording;
+    private boolean isRecordingFailures;
     private String configuration;
     private ProgressDialog progress;
     private AtlantisService service;
@@ -49,6 +51,7 @@ public class AtlantisSettingsFragment extends PreferenceFragment {
 
         configurationPreferenceKey = getString(R.string.key_atlantis_configuration);
         recordingPreferenceKey = getString(R.string.key_atlantis_record);
+        recordingFailuresPreferenceKey = getString(R.string.key_atlantis_record_failures);
         enabledPreferenceKey = getString(R.string.key_atlantis_enable);
 
         Context context = getActivity().getApplicationContext();
@@ -56,6 +59,7 @@ public class AtlantisSettingsFragment extends PreferenceFragment {
         configuration = sharedPreferences.getString(configurationPreferenceKey, null);
         isEnabled = sharedPreferences.getBoolean(enabledPreferenceKey, false);
         isRecording = sharedPreferences.getBoolean(recordingPreferenceKey, false);
+        isRecordingFailures = sharedPreferences.getBoolean(recordingFailuresPreferenceKey, false);
     }
 
     @Override
@@ -87,6 +91,13 @@ public class AtlantisSettingsFragment extends PreferenceFragment {
             refreshServiceState();
             return true;
         });
+
+        Preference recordFailuresPreference = findPreference(recordingFailuresPreferenceKey);
+        recordFailuresPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            isRecordingFailures = (Boolean) newValue;
+            refreshServiceState();
+            return true;
+        });
     }
 
     @Override
@@ -109,8 +120,13 @@ public class AtlantisSettingsFragment extends PreferenceFragment {
                 @Override
                 protected Void doInBackground(Void... params) {
                     if (service != null) {
-                        service.setAtlantisEnabled(isEnabled, configuration);
-                        service.setRecordMissingRequestsEnabled(isRecording);
+                        try {
+                            service.setAtlantisEnabled(isEnabled, configuration);
+                            service.setRecordMissingRequestsEnabled(isRecording);
+                            service.setRecordMissingFailuresEnabled(isRecordingFailures);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     return null;
                 }

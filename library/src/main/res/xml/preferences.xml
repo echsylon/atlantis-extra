@@ -22,4 +22,12 @@
         android:summary="@string/allows_recording_missing_requests"
         android:title="@string/enable_recording"/>
 
+    <!-- Enable/disable recording failures setting -->
+    <SwitchPreference
+        android:defaultValue="false"
+        android:dependency="@string/key_atlantis_record"
+        android:key="@string/key_atlantis_record_failures"
+        android:summary="@string/allows_recording_missing_failures"
+        android:title="@string/enable_recording_failures"/>
+
 </PreferenceScreen>
