@@ -203,14 +203,11 @@ public class AtlantisService extends Service {
         enabledPreferenceKey = getString(R.string.key_atlantis_enable);
 
         String configuration = sharedPreferences.getString(configurationPreferenceKey, null);
-        if (configuration != null && sharedPreferences.getBoolean(enabledPreferenceKey, false))
-            setAtlantisEnabled(true, configuration);
+        boolean doEnable = sharedPreferences.getBoolean(recordingFailuresPreferenceKey, false);
 
-        if (sharedPreferences.getBoolean(recordingPreferenceKey, false))
-            setRecordMissingRequestsEnabled(true);
-
-        if (sharedPreferences.getBoolean(recordingFailuresPreferenceKey, false))
-            setRecordMissingFailuresEnabled(true);
+        setAtlantisEnabled(doEnable && configuration != null, configuration);
+        setRecordMissingRequestsEnabled(sharedPreferences.getBoolean(recordingPreferenceKey, false));
+        setRecordMissingFailuresEnabled(sharedPreferences.getBoolean(recordingFailuresPreferenceKey, false));
     }
 
     @Override
@@ -286,6 +283,8 @@ public class AtlantisService extends Service {
                 atlantis.start();
                 updateConfigurationPreference(configuration);
                 updateEnabledPreference(true);
+            } catch (Exception e) {
+                Log.i(TAG, "Couldn't enable Atlantis: ", e);
             } finally {
                 closeSilently(inputStream);
             }
